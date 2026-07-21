@@ -521,11 +521,37 @@ const nav=document.getElementById('nav');
     });
 
     const visitorFeedback=document.getElementById('visitorFeedback');
-    visitorFeedback?.addEventListener('submit',event=>{
-      event.preventDefault();
-      document.getElementById('feedbackStatus').textContent='Thank you. Your feedback has been saved in this demo.';
-      visitorFeedback.reset();
-    });
+    if(visitorFeedback){
+      const feedbackStatus=document.getElementById('feedbackStatus');
+      const vfEndpoint='https://formspree.io/f/mgogygro';
+      let vfSending=false;
+      visitorFeedback.addEventListener('submit',event=>{
+        event.preventDefault();
+        if(vfSending) return;
+        vfSending=true;
+        const btn=visitorFeedback.querySelector('button[type="submit"]');
+        const btnLabel=btn?btn.textContent:'';
+        if(btn){ btn.disabled=true; btn.textContent='Sending...'; }
+        if(feedbackStatus) feedbackStatus.textContent='Sending...';
+        fetch(vfEndpoint,{
+          method:'POST',
+          body:new FormData(visitorFeedback),
+          headers:{'Accept':'application/json'}
+        }).then(response=>{
+          if(response.ok){
+            if(feedbackStatus) feedbackStatus.textContent='Thank you. Your note has been sent.';
+            visitorFeedback.reset();
+          }else{
+            if(feedbackStatus) feedbackStatus.textContent='Something went wrong. Please try again.';
+          }
+        }).catch(()=>{
+          if(feedbackStatus) feedbackStatus.textContent='Something went wrong. Please try again.';
+        }).finally(()=>{
+          vfSending=false;
+          if(btn){ btn.disabled=false; btn.textContent=btnLabel||'Send note'; }
+        });
+      });
+    }
 
 
     /* V38 group-controlled Morandi skill orbit */
@@ -971,11 +997,8 @@ const nav=document.getElementById('nav');
     setTimeout(()=>flowerWidget?.classList.remove('flower-sent'),1400);
   });
 
-  // Visitor note confirmation.
-  const visitorFeedback=document.getElementById('visitorFeedback');
-  visitorFeedback?.addEventListener('submit',()=>{
-    showToast('Thank you!');
-  });
+  // Visitor note submission + sending/success/error states are handled by the
+  // Formspree submit handler above (feedback shown in #feedbackStatus).
 
   // Larger magnetic interaction zone for Connect.
   const zone=document.querySelector('.send-zone');
@@ -1030,11 +1053,8 @@ const nav=document.getElementById('nav');
     clearTimeout(toastTimer);
     toastTimer=setTimeout(()=>toast.classList.remove('show'),duration);
   }
-  const feedback=document.getElementById('visitorFeedback');
-  feedback?.addEventListener('submit',e=>{
-    e.preventDefault();
-    showToast('Thank you for your note. Your feedback is very valuable to me. Have a great day.',4800);
-  },true);
+  // Visitor note submission is handled by the Formspree submit handler (see above);
+  // this avoids a premature confirmation toast before the real send resolves.
 
   const gift=document.getElementById('hiddenGift');
   const giftButton=document.getElementById('giftBoxButton');
