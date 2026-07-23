@@ -1,4 +1,4 @@
-# Marceline Yu — Personal Portfolio
+# Marceline Yu
 
 This repository contains the source code for my personal portfolio: **[marcelineyu.github.io](https://marcelineyu.github.io/)**
 
